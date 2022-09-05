@@ -23,7 +23,10 @@ message ListRacesResponse {
 
 // Filter for listing races.
 message ListRacesRequestFilter {
+  // MeetingIds contains the list of meeting_id to be shown.
   repeated int64 meeting_ids = 1;
+  // Visible filters the races which has the equivalent visible field value.
+  optional bool visible = 2;
 }
 
 /* Resources */
