@@ -26,5 +26,20 @@ func (r *racesRepo) seed() error {
 		}
 	}
 
+	err = r.setFutureStartTime(100)
+
+	return err
+}
+
+// Set advertised_start_time of the specified id to a future time value to show the status as OPEN.
+func (r *racesRepo) setFutureStartTime(id int) error {
+	var additionalHour time.Duration = (60 * time.Duration(id))
+	futureTime := time.Now().Add(additionalHour + time.Hour)
+
+	statement, err := r.db.Prepare(`UPDATE races SET advertised_start_time=? where id=?`)
+
+	if err == nil {
+		_, err = statement.Exec(futureTime, id)
+	}
 	return err
 }
