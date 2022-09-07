@@ -79,6 +79,26 @@ func (s *sportsRepo) applyFilter(query string, filter *sports.ListEventsRequestF
 		args = append(args, *filter.SportId)
 	}
 
+	if len(filter.Status) > 0 {
+		status := strings.TrimSpace(filter.Status)
+		status = strings.ToUpper(status)
+		now := time.Now().Format(time.RFC3339)
+
+		if status == "CLOSED" {
+			clauses = append(clauses, "advertised_end_time < ?")
+			args = append(args, now)
+		} else if status == "OPEN" {
+			clauses = append(clauses, "advertised_start_time > ?")
+			args = append(args, now)
+		} else if status == "ONGOING" {
+			clauses = append(clauses, "advertised_start_time < ?")
+			args = append(args, now)
+
+			clauses = append(clauses, "advertised_end_time > ?")
+			args = append(args, now)
+		}
+	}
+
 	if len(clauses) != 0 {
 		query += " WHERE " + strings.Join(clauses, " AND ")
 	}

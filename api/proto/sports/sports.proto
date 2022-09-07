@@ -28,6 +28,7 @@ message ListEventsResponse {
 // Request for ListEvents call. 
 message ListEventsRequestFilter {
   optional int64 sportId = 1;
+  string status = 2;
 }
 
 /* Resources */
