@@ -21,6 +21,9 @@ type RacesRepo interface {
 
 	// List will return a list of races.
 	List(filter *racing.ListRacesRequestFilter, orderBy string) ([]*racing.Race, error)
+
+	// GetRaceByID will return the information of a given race id.
+	GetRaceByID(id int64) (*racing.Race, error)
 }
 
 type racesRepo struct {
@@ -43,6 +46,39 @@ func (r *racesRepo) Init() error {
 	})
 
 	return err
+}
+
+// GetRaceById will return the information of a given race id.
+func (r *racesRepo) GetRaceByID(id int64) (*racing.Race, error) {
+	var race racing.Race
+	var advertisedStart time.Time
+
+	row := r.db.QueryRow(`SELECT id, 
+	meeting_id, 
+	name, 
+	number, 
+	visible, 
+	advertised_start_time 
+	FROM races where id=?`, id)
+
+	if err := row.Scan(&race.Id, &race.MeetingId, &race.Name, &race.Number, &race.Visible, &advertisedStart); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("race not found")
+		}
+
+		return nil, err
+	}
+
+	ts, err := ptypes.TimestampProto(advertisedStart)
+	if err != nil {
+		return nil, err
+	}
+
+	race.AdvertisedStartTime = ts
+
+	race.Status = getRaceStatus(advertisedStart)
+
+	return &race, nil
 }
 
 // List performs the requested parameters and returns the final list of races.
@@ -169,12 +205,7 @@ func (r *racesRepo) scanRaces(
 
 		race.AdvertisedStartTime = ts
 
-		// Set the correct status of the race: OPEN for future race and CLOSED for past race.
-		if advertisedStart.After(time.Now()) {
-			race.Status = racing.RaceStatus_OPEN
-		} else {
-			race.Status = racing.RaceStatus_CLOSED
-		}
+		race.Status = getRaceStatus(advertisedStart)
 
 		races = append(races, &race)
 	}
@@ -199,4 +230,15 @@ func getRaceColumnName(value string) string {
 	}
 
 	return columnName
+}
+
+// getRaceStatus gets the correct status of the race: OPEN for future race and CLOSED for past race.
+func getRaceStatus(advertisedStart time.Time) racing.RaceStatus {
+	status := racing.RaceStatus_CLOSED
+
+	if advertisedStart.After(time.Now()) {
+		status = racing.RaceStatus_OPEN
+	}
+
+	return status
 }
