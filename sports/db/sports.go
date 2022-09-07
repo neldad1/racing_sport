@@ -135,15 +135,15 @@ func (s *sportsRepo) scanEvents(rows *sql.Rows) ([]*sports.Event, error) {
 }
 
 // getEventStatus gets the correct status of the event: OPEN for future event, ONGOING for event that has started and CLOSED for past event.
-func getEventStatus(advertisedStart, advertisedEnd time.Time) sports.EventStatus {
-	status := sports.EventStatus_CLOSED
+func getEventStatus(advertisedStart, advertisedEnd time.Time) string {
+	status := "CLOSED"
 
 	now := time.Now()
 
 	if advertisedStart.After(now) {
-		status = sports.EventStatus_OPEN
+		status = "OPEN"
 	} else if advertisedStart.Before(now) && advertisedEnd.After(now) {
-		status = sports.EventStatus_ONGOING
+		status = "ONGOING"
 	}
 
 	return status

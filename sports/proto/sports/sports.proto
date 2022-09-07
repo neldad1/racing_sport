@@ -24,18 +24,11 @@ message ListEventsResponse {
 
 // Request for ListEvents call. 
 message ListEventsRequestFilter {
-  optional int64 sportId = 1;
+  optional int64 sport_id = 1;
   string status = 2;
 }
 
 /* Resources */
-
-// An enum for the status of an event.
-enum EventStatus {
-  CLOSED = 0;
-  OPEN = 1;
-  ONGOING = 2;
-}
 
 // A sport event resource.
 message Event {
@@ -54,5 +47,5 @@ message Event {
   // AdvertisedEndTime is the time the event is advertised to end.
   google.protobuf.Timestamp advertised_end_time = 7;
   // Status represents whether the event is still open, ongoing or closed.
-  EventStatus status = 8;
+  string status = 8;
 }
