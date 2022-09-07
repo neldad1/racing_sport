@@ -22,6 +22,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// An enum for the status of an event.
 type EventStatus int32
 
 const (
@@ -227,7 +228,7 @@ type Event struct {
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// VenueId represents a unique identifier for the venue.
 	VenueId int64 `protobuf:"varint,3,opt,name=venue_id,json=venueId,proto3" json:"venue_id,omitempty"`
-	// SportsId represents a unique identifier for the sport.
+	// SportsId represents a unique identifier for the type of sport.
 	SportId int64 `protobuf:"varint,4,opt,name=sport_id,json=sportId,proto3" json:"sport_id,omitempty"`
 	// ParticipantsId represents a unique identifier for the participants of the event.
 	ParticipantsId int64 `protobuf:"varint,5,opt,name=participants_id,json=participantsId,proto3" json:"participants_id,omitempty"`
@@ -235,7 +236,7 @@ type Event struct {
 	AdvertisedStartTime *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=advertised_start_time,json=advertisedStartTime,proto3" json:"advertised_start_time,omitempty"`
 	// AdvertisedEndTime is the time the event is advertised to end.
 	AdvertisedEndTime *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=advertised_end_time,json=advertisedEndTime,proto3" json:"advertised_end_time,omitempty"`
-	// Status represents whether the event is still open or closed.
+	// Status represents whether the event is still open, ongoing or closed.
 	Status EventStatus `protobuf:"varint,8,opt,name=status,proto3,enum=sports.EventStatus" json:"status,omitempty"`
 }
 

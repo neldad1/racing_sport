@@ -32,6 +32,7 @@ message ListEventsRequestFilter {
 
 /* Resources */
 
+// An enum for the status of an event.
 enum EventStatus {
   CLOSED = 0;
   OPEN = 1;
@@ -46,7 +47,7 @@ message Event {
   string name = 2;
   // VenueId represents a unique identifier for the venue.
   int64 venue_id = 3;
-  // SportsId represents a unique identifier for the sport.
+  // SportsId represents a unique identifier for the type of sport.
   int64 sport_id = 4;
   // ParticipantsId represents a unique identifier for the participants of the event.
   int64 participants_id = 5;
@@ -54,6 +55,6 @@ message Event {
   google.protobuf.Timestamp advertised_start_time = 6;
   // AdvertisedEndTime is the time the event is advertised to end.
   google.protobuf.Timestamp advertised_end_time = 7;
-  // Status represents whether the event is still open or closed.
+  // Status represents whether the event is still open, ongoing or closed.
   EventStatus status = 8;
 }
