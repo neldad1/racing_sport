@@ -8,6 +8,8 @@ import "google/protobuf/timestamp.proto";
 service Sports {
   // ListEvents will return a collection of all sports events.
   rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
+  // GetEvent will return a single sports event.
+  rpc GetEvent(GetEventRequest) returns (GetEventResponse) {}
 }
 
 /* Requests/Responses */
@@ -27,6 +29,16 @@ message ListEventsResponse {
 message ListEventsRequestFilter {
   optional int64 sport_id = 1;
   string status = 2;
+}
+
+// Request for GetEvent call.
+message GetEventRequest {
+  int64 id = 1;
+}
+
+// Response for GetEvent call.
+message GetEventResponse {
+  Event event = 1;
 }
 
 /* Resources */

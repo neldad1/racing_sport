@@ -11,6 +11,10 @@ service Sports {
   rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {
     option (google.api.http) = { post: "/v1/list-events", body: "*" };
   }
+  // GetEvent returns a single sports event.
+  rpc GetEvent(GetEventRequest) returns (GetEventResponse) {
+    option (google.api.http) = { get: "/v1/list-events/{id}" };
+  }
 }
 
 /* Requests/Responses */
@@ -30,6 +34,16 @@ message ListEventsResponse {
 message ListEventsRequestFilter {
   optional int64 sport_id = 1;
   string status = 2;
+}
+
+// Request for GetEvent call.
+message GetEventRequest {
+  int64 id = 1;
+}
+
+// Response for GetEvent call.
+message GetEventResponse {
+  Event event = 1;
 }
 
 /* Resources */

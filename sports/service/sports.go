@@ -9,6 +9,8 @@ import (
 type Sports interface {
 	// ListEvents will return a collection of all sports events.
 	ListEvents(ctx context.Context, in *sports.ListEventsRequest) (*sports.ListEventsResponse, error)
+	// GetEvent will return a single sports event.
+	GetEvent(ctx context.Context, in *sports.GetEventRequest) (*sports.GetEventResponse, error)
 }
 
 // sportsService implements the Sports interface.
@@ -29,4 +31,14 @@ func (s *sportsService) ListEvents(ctx context.Context, in *sports.ListEventsReq
 	}
 
 	return &sports.ListEventsResponse{Events: events}, nil
+}
+
+// GetEvent will return a single sports event.
+func (s *sportsService) GetEvent(ctx context.Context, in *sports.GetEventRequest) (*sports.GetEventResponse, error) {
+	event, err := s.sportsRepo.GetEventByID(in.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &sports.GetEventResponse{Event: event}, nil
 }

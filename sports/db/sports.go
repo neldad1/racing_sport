@@ -25,6 +25,8 @@ type SportsRepo interface {
 
 	// EventsList will return a list of sport events.
 	EventsList(filter *sports.ListEventsRequestFilter, orderBy string) ([]*sports.Event, error)
+	// GetEventById will return the information of a given event id.
+	GetEventByID(id int64) (*sports.Event, error)
 }
 
 // NewSportsRepo creates a new sport repository.
@@ -42,6 +44,37 @@ func (s *sportsRepo) Init() error {
 	})
 
 	return err
+}
+
+// GetEventByID will return the information of a given event id.
+func (s *sportsRepo) GetEventByID(id int64) (*sports.Event, error) {
+	var event sports.Event
+	var advertisedStart, advertisedEnd time.Time
+
+	row := s.db.QueryRow(`SELECT id, 
+	name, 
+	venue_id, 
+	sport_id, 
+	participants_id, 
+	advertised_start_time,
+	advertised_end_time
+	FROM events where id=?`, id)
+
+	if err := row.Scan(&event.Id, &event.Name, &event.VenueId, &event.SportId, &event.ParticipantsId, &advertisedStart, &advertisedEnd); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("event not found")
+		}
+
+		return nil, err
+	}
+
+	// Convert time to proto timestamp.
+	event.AdvertisedStartTime = timestamppb.New(advertisedStart)
+	event.AdvertisedEndTime = timestamppb.New(advertisedEnd)
+
+	event.Status = getEventStatus(advertisedStart, advertisedEnd)
+
+	return &event, nil
 }
 
 // EventsList will return a list of sport events.
