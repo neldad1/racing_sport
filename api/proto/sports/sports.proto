@@ -1,0 +1,69 @@
+syntax = "proto3";
+package sports;
+
+option go_package = "/sports";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+service Sports {
+  // ListEvents returns a list of all sports events.
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {
+    option (google.api.http) = { post: "/v1/list-events", body: "*" };
+  }
+  // GetEvent returns a single sports event.
+  rpc GetEvent(GetEventRequest) returns (GetEventResponse) {
+    option (google.api.http) = { get: "/v1/list-events/{id}" };
+  }
+}
+
+/* Requests/Responses */
+
+// Request for ListEvents call. 
+message ListEventsRequest {
+  ListEventsRequestFilter filter = 1;
+  string order_by = 2;
+}
+
+// Response for ListEvents call. 
+message ListEventsResponse {
+  repeated Event events = 1;
+}
+
+// Request for ListEvents call. 
+message ListEventsRequestFilter {
+  optional int64 sport_id = 1;
+  string status = 2;
+}
+
+// Request for GetEvent call.
+message GetEventRequest {
+  int64 id = 1;
+}
+
+// Response for GetEvent call.
+message GetEventResponse {
+  Event event = 1;
+}
+
+/* Resources */
+
+// A sport event resource.
+message Event {
+  // ID represents a unique identifier for the event.
+  int64 id = 1;
+  // Name is the official name given to the event.
+  string name = 2;
+  // VenueId represents a unique identifier for the venue.
+  int64 venue_id = 3;
+  // SportsId represents a unique identifier for the type of sport.
+  int64 sport_id = 4;
+  // ParticipantsId represents a unique identifier for the participants of the event.
+  int64 participants_id = 5;
+  // AdvertisedStartTime is the time the event is advertised to run.
+  google.protobuf.Timestamp advertised_start_time = 6;
+  // AdvertisedEndTime is the time the event is advertised to end.
+  google.protobuf.Timestamp advertised_end_time = 7;
+  // Status represents whether the event is still open, ongoing or closed.
+  string status = 8;
+}
