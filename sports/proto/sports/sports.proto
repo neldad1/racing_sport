@@ -15,6 +15,7 @@ service Sports {
 // Request for ListEvents call. 
 message ListEventsRequest {
   ListEventsRequestFilter filter = 1;
+  string order_by = 2;
 }
 
 // Response for ListEvents call. 

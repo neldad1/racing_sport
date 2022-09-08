@@ -2,6 +2,8 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -22,7 +24,7 @@ type SportsRepo interface {
 	Init() error
 
 	// EventsList will return a list of sport events.
-	EventsList(filter *sports.ListEventsRequestFilter) ([]*sports.Event, error)
+	EventsList(filter *sports.ListEventsRequestFilter, orderBy string) ([]*sports.Event, error)
 }
 
 // NewSportsRepo creates a new sport repository.
@@ -43,7 +45,7 @@ func (s *sportsRepo) Init() error {
 }
 
 // EventsList will return a list of sport events.
-func (s *sportsRepo) EventsList(filter *sports.ListEventsRequestFilter) ([]*sports.Event, error) {
+func (s *sportsRepo) EventsList(filter *sports.ListEventsRequestFilter, orderBy string) ([]*sports.Event, error) {
 	var (
 		err   error
 		query string
@@ -53,6 +55,11 @@ func (s *sportsRepo) EventsList(filter *sports.ListEventsRequestFilter) ([]*spor
 	query = getEventsQueries()[eventsList]
 
 	query, args = s.applyFilter(query, filter)
+
+	query, err = s.applyOrderBy(query, orderBy)
+	if err != nil {
+		return nil, err
+	}
 
 	rows, err := s.db.Query(query, args...)
 	if err != nil {
@@ -106,6 +113,51 @@ func (s *sportsRepo) applyFilter(query string, filter *sports.ListEventsRequestF
 	return query, args
 }
 
+// applyOrderBy adds the ORDER BY clause in the query based on the requested sorting option.
+func (s *sportsRepo) applyOrderBy(query string, orderBy string) (string, error) {
+	// Return immediately when orderBy is empty.
+	if len(orderBy) == 0 {
+		return query, nil
+	}
+
+	orderBy = strings.TrimSpace(orderBy)
+
+	// TODO: Implement sorting using status as it is not a column in the event table.
+	if orderBy == "status" {
+		return query, nil
+	}
+
+	// Check for desc/asc option.
+	params := strings.Split(orderBy, " ")
+	paramsLength := len(params)
+	fieldName := params[0]
+
+	// Return invalid value error if the length of params is more than 2. Field name and asc/desc are the only values accepted.
+	if paramsLength > 2 {
+		return query, fmt.Errorf("invalid orderBy value: %s Format is `fieldName desc`", orderBy)
+	}
+
+	// Get the corresponding column name.
+	clause := getEventColumnName(fieldName)
+
+	if len(clause) == 0 {
+		return query, fmt.Errorf("unable to find the field name: %s", fieldName)
+	}
+
+	// Check if asc or desc is provided.
+	if paramsLength == 2 {
+		order := strings.ToUpper(params[1])
+		if order != "ASC" && order != "DESC" {
+			return query, fmt.Errorf("invalid sort order: %s. Choose either `asc` or `desc`", params[1])
+		}
+		clause += " " + order
+	}
+
+	query += " ORDER BY " + clause
+
+	return query, nil
+}
+
 // scanEvents copies the data from the database into the values of each event.
 func (s *sportsRepo) scanEvents(rows *sql.Rows) ([]*sports.Event, error) {
 	var events []*sports.Event
@@ -147,4 +199,23 @@ func getEventStatus(advertisedStart, advertisedEnd time.Time) string {
 	}
 
 	return status
+}
+
+// getEventColumnName checks if the value is equivalent to any of the column names in sports.Event.
+func getEventColumnName(value string) string {
+	var columnName string
+
+	v := reflect.ValueOf(sports.Event{})
+
+	for i := 0; i < v.NumField(); i++ {
+		structField := v.Type().Field(i)
+		protoBufTag := structField.Tag.Get("protobuf")
+		if strings.Contains(protoBufTag, value) {
+			values := strings.Split(structField.Tag.Get("json"), ",")
+			columnName = values[0]
+			break
+		}
+	}
+
+	return columnName
 }

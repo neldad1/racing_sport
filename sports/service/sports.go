@@ -23,7 +23,7 @@ func NewSportsService(sportsRepo db.SportsRepo) Sports {
 
 // ListEvents will return a collection of all sports events.
 func (s *sportsService) ListEvents(ctx context.Context, in *sports.ListEventsRequest) (*sports.ListEventsResponse, error) {
-	events, err := s.sportsRepo.EventsList(in.Filter)
+	events, err := s.sportsRepo.EventsList(in.Filter, in.OrderBy)
 	if err != nil {
 		return nil, err
 	}
